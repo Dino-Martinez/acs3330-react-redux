@@ -1,24 +1,42 @@
-import logo from './logo.svg';
 import './App.css';
+import Password from './Password';
+import { legacy_createStore as createStore } from 'redux';
+import { Provider } from 'react-redux';
+import reducers from './reducers';
+import PasswordList from './PasswordList';
 
 function App() {
+  const loadState = () => {
+    try {
+      const serializedState = localStorage.getItem('PASSWORD_STATE')
+      if (!serializedState) return 
+
+      return JSON.parse(serializedState)
+    } catch (err) {
+      console.error(err)
+    }
+  }
+
+ const saveState = state => {
+   try {
+    const serializedState = JSON.stringify(state)
+    localStorage.setItem('PASSWORD_STATE', serializedState)
+   } catch (err) {
+     console.error(err)
+   }
+ }
+
+  const persistedState = loadState()
+  const store = createStore(reducers, persistedState)
+  store.subscribe(() => saveState(store.getState()))
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <Provider store={store}>
+      <div className="App">
+        <h1>Password Storage</h1>
+        <Password />
+        <PasswordList />
+      </div>
+    </Provider>
   );
 }
 
